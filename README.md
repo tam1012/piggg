@@ -17,12 +17,20 @@ sinh bằng code. Three.js nằm sẵn trong `vendor/`.
 | `B` | đẻ thêm heo con (tối đa ~26 con) |
 | `F` | ăn ở máng cám (phải đứng gần máng) |
 | `G` | xịt hơi 💨 — heo gần bạn tán loạn bỏ chạy |
+| `1`–`7` | đàn heo piano 🎹 |
+| `P` | tiệc pháo giấy, cả đàn nhảy múa 🎉 |
+| `H` | chụp ảnh có khung + tải về máy 📸 |
+| `T` | chơi trốn tìm: tìm 3 heo con trong 35 giây 🔍 |
 | Chuột kéo / lăn | xoay camera / zoom |
 | Bấm/chạm vào heo khác | nó giật mình bỏ chạy (hiện tên nó) |
-| Bấm/chạm vào chính mình | đặt tên cho heo của bạn |
+| Bấm/chạm vào chính mình | đặt tên + đổi màu heo của bạn |
 | Nhảy xuống vũng bùn | bắn bùn, heo dính bùn |
 | `C` | chế độ điện ảnh (ẩn UI, camera quay chậm) |
 | `F3` | debug FPS |
+
+Trò chơi luôn sẵn trên map: săn 6 **táo vàng** 🍎 (xong tự sang vòng mới),
+tìm 3 **trứng vàng** 🥚 ẩn quanh trại (đủ 3 thì **Heo Vàng** xuất hiện đi theo
+và mở màu vàng trong bảng màu), **đá táo** vào khung thành phía tây sân ⚽.
 
 Mỗi con heo có bảng tên trên đầu: đàn heo đầu mang tên Lâm, Phan Anh, Đức,
 Thành, Trung, Đạt, Công, Dương, Huy; heo con mới đẻ có tên ngẫu nhiên kiểu
