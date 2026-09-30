@@ -637,6 +637,7 @@ function spawnNpc(i) {
 }
 spawnPlayer();
 for (let i = 0; i < NPC_NAMES.length; i++) spawnNpc(i);
+window.__pig = () => player; // hook debug
 
 /* ---------------- va chạm ---------------- */
 function resolveCollisions(pos, prev) {
@@ -1099,7 +1100,7 @@ let jumpQueued = false;
 function playerUpdate(dt, t) {
   // hướng đi theo camera
   const fwd = new THREE.Vector3(); camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
-  const right = new THREE.Vector3(fwd.z, 0, -fwd.x);
+  const right = new THREE.Vector3(-fwd.z, 0, fwd.x); // screen-right thật của camera
   let mx = fwd.x * input.z + right.x * input.x;
   let mz = fwd.z * input.z + right.z * input.x;
   const ml = Math.hypot(mx, mz);
