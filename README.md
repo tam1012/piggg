@@ -17,6 +17,8 @@ sinh bằng code. Three.js nằm sẵn trong `vendor/`.
 | `B` | đẻ thêm heo con (tối đa ~26 con) |
 | `F` | ăn ở máng cám (phải đứng gần máng) |
 | `G` | xịt hơi 💨 — heo gần bạn tán loạn bỏ chạy |
+| `V` | ủi đất tìm cà rốt / xu vàng / nấm thần 🥕 |
+| `R` | mini-game đua heo quanh sân 🏁 |
 | `1`–`7` | đàn heo piano 🎹 |
 | `P` | tiệc pháo giấy, cả đàn nhảy múa 🎉 |
 | `H` | chụp ảnh có khung + tải về máy 📸 |
@@ -28,7 +30,9 @@ sinh bằng code. Three.js nằm sẵn trong `vendor/`.
 | `C` | chế độ điện ảnh (ẩn UI, camera quay chậm) |
 | `F3` | debug FPS |
 
-Trò chơi luôn sẵn trên map: săn 6 **táo vàng** 🍎 (xong tự sang vòng mới),
+Extra vui: heo đội **phụ kiện** (nón lá, vương miện, kính râm, nơ, hoa — chọn trong modal
+tô màu), **tắm ao** ra bọt xà phòng, **đom đóm** ban đêm, **bóng thoại emoji** của đàn heo,
+**nhạc nền kalimba** (bật Âm thanh). Trò chơi luôn sẵn trên map: săn 6 **táo vàng** 🍎 (xong tự sang vòng mới),
 tìm 3 **trứng vàng** 🥚 ẩn quanh trại (đủ 3 thì **Heo Vàng** xuất hiện đi theo
 và mở màu vàng trong bảng màu), **đá táo** vào khung thành phía tây sân ⚽.
 

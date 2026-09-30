@@ -140,16 +140,31 @@
   }
   #tbtns {
     position: fixed; right: 16px; bottom: 20px; z-index: 25;
-    display: grid; grid-template-columns: repeat(2, 64px); gap: 10px;
-  }
-  #tbtns button {
-    height: 56px; border-radius: 50%;
-    background: rgba(12,14,18,.55); border: 1.5px solid rgba(255,255,255,.28);
-    color: var(--text); font: 700 13px/1.1 system-ui, sans-serif;
+    display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
     touch-action: none;
   }
-  #tbtns button:active { background: rgba(242,136,159,.4); }
-  #tbtns button.on { background: rgba(242,136,159,.45); border-color: var(--accent); }
+  #tbtns button {
+    height: 54px; min-width: 54px; border-radius: 50%;
+    background: rgba(12, 14, 18, .55); border: 1.5px solid rgba(255, 255, 255, .28);
+    color: var(--text); font: 700 13px/1.1 system-ui, sans-serif;
+    touch-action: none; padding: 0 10px;
+  }
+  .tbtn-row { display: flex; gap: 10px; }
+  #tMoreBtn { border-radius: 16px; font-size: 17px; }
+  #tbtns button:active { background: rgba(242, 136, 159, .4); }
+  #tbtns button.on { background: rgba(242, 136, 159, .45); border-color: var(--accent); }
+  #moreActions {
+    display: none; position: fixed; right: 16px; bottom: 216px; z-index: 25;
+    flex-direction: column; gap: 6px; padding: 8px;
+  }
+  #moreActions.open { display: flex; }
+  #moreActions button {
+    height: 42px; border-radius: 12px;
+    background: rgba(12, 14, 18, .55); border: 1.5px solid rgba(255, 255, 255, .25);
+    color: var(--text); font: 700 12.5px system-ui, sans-serif;
+    padding: 0 14px; text-align: left; touch-action: none;
+  }
+  #moreActions button:active { background: rgba(242, 136, 159, .45); }
 
   /* ---------- quest chip ---------- */
   #quest {
@@ -208,15 +223,6 @@
   #swSave { background: var(--accent) !important; color: #fff !important; border-color: transparent !important; }
 
   /* ---------- mobile: mini row + piano ---------- */
-  #miniRow {
-    display: none; position: fixed; right: 16px; bottom: 216px; z-index: 25;
-    gap: 8px;
-  }
-  #miniRow button {
-    width: 52px; height: 44px; border-radius: 12px;
-    background: rgba(12, 14, 18, .55); border: 1.5px solid rgba(255, 255, 255, .28);
-    color: var(--text); font: 700 11px system-ui, sans-serif;
-  }
   #piano {
     display: none; position: fixed; right: 16px; bottom: 268px; z-index: 25; gap: 5px;
   }
@@ -228,7 +234,19 @@
   }
   #piano button:active { background: var(--accent); color: #fff; }
   body.piano #piano { display: flex; }
-  body.touch #miniRow { display: flex; }
+
+  /* ---------- modal: màu + phụ kiện ---------- */
+  .modal-sec-title {
+    font: 800 10.5px system-ui, sans-serif; letter-spacing: .09em;
+    color: var(--text-dim); text-transform: uppercase;
+  }
+  #hats { display: flex; flex-wrap: wrap; gap: 6px; }
+  .hat-opt {
+    border: 1.5px solid var(--panel-border); border-radius: 10px;
+    background: var(--key-bg); color: var(--text);
+    font: 600 12px system-ui, sans-serif; padding: 7px 9px; cursor: pointer;
+  }
+  .hat-opt.sel { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(242, 136, 159, .35); }
 
   @media (max-width: 760px) {
     #title { padding: 6px 9px; border-radius: 10px; }
@@ -299,6 +317,8 @@
   <span class="h kb"><kbd>B</kbd>heo con</span>
   <span class="h kb"><kbd>F</kbd>ăn</span>
   <span class="h kb"><kbd>G</kbd>xịt 💨</span>
+  <span class="h kb"><kbd>V</kbd>ủi đất</span>
+  <span class="h kb"><kbd>R</kbd>đua heo</span>
   <span class="h kb"><kbd>1-7</kbd>đàn heo</span>
   <span class="h kb"><kbd>P</kbd>tiệc 🎉</span>
   <span class="h kb"><kbd>H</kbd>ảnh</span>
@@ -320,7 +340,10 @@
   <div class="card pill">
     <h3>🐷 Heo của bạn</h3>
     <input id="nameInput" maxlength="12" placeholder="Tên (tối đa 12 ký tự)">
+    <div class="modal-sec-title">Màu sắc</div>
     <div id="swatches"></div>
+    <div class="modal-sec-title">Phụ kiện đội đầu</div>
+    <div id="hats"></div>
     <div class="row">
       <button id="swClose">Thoát</button>
       <button id="swSave">Xong</button>
@@ -331,17 +354,22 @@
 <div id="touch">
   <div id="joy"><div class="knob"></div></div>
   <div id="tbtns">
-    <button id="tRun">CHẠY</button>
+    <button id="tMoreBtn" title="Chức năng thêm">✨</button>
     <button id="tJump">NHẢY</button>
-    <button id="tEat">ĂN</button>
-    <button id="tFart">XỊT</button>
-    <button id="tOink">ỤT ỊT</button>
-    <button id="tParty">TIỆC</button>
+    <div class="tbtn-row">
+      <button id="tDig">ỦI 🥕</button>
+      <button id="tOink">ỤT ỊT</button>
+    </div>
   </div>
-  <div id="miniRow">
-    <button id="tPhoto">ẢNH</button>
-    <button id="tSeek">TÌM</button>
-    <button id="tPiano">♪</button>
+  <div id="moreActions" class="pill">
+    <button id="tRace">🏁 Đua heo</button>
+    <button id="tParty">🎉 Tiệc tùng</button>
+    <button id="tSeek">🔍 Trốn tìm</button>
+    <button id="tPhoto">📸 Chụp ảnh</button>
+    <button id="tEat">🌽 Ăn cám</button>
+    <button id="tFart">💨 Xịt hơi</button>
+    <button id="tRun">🏃 CHẠY</button>
+    <button id="tPiano">♪ Đàn piano</button>
   </div>
   <div id="piano"></div>
 </div>
