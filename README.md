@@ -14,6 +14,8 @@ sinh bằng code. Three.js nằm sẵn trong `vendor/`.
 | `Shift` | chạy |
 | `Space` | nhảy |
 | `E` | ụt ịt — cả đàn heo chạy tới tìm bạn |
+| `V` | ủi đất đào kho báu 🥕 (cà rốt, vàng, nấm lấp lánh) |
+| `R` | mini-game Đua Heo vòng quanh trang trại 🏁 |
 | `B` | đẻ thêm heo con (tối đa ~26 con) |
 | `F` | ăn ở máng cám (phải đứng gần máng) |
 | `G` | xịt hơi 💨 — heo gần bạn tán loạn bỏ chạy |
@@ -23,7 +25,8 @@ sinh bằng code. Three.js nằm sẵn trong `vendor/`.
 | `T` | chơi trốn tìm: tìm 3 heo con trong 35 giây 🔍 |
 | Chuột kéo / lăn | xoay camera / zoom |
 | Bấm/chạm vào heo khác | nó giật mình bỏ chạy (hiện tên nó) |
-| Bấm/chạm vào chính mình | đặt tên + đổi màu heo của bạn |
+| Bấm/chạm vào chính mình | đặt tên, đổi màu + chọn nón thời trang 👒 |
+| Nhảy xuống ao nước | tắm sạch bùn, sủi bọt xà phòng óng ánh 🫧 |
 | Nhảy xuống vũng bùn | bắn bùn, heo dính bùn |
 | `C` | chế độ điện ảnh (ẩn UI, camera quay chậm) |
 | `F3` | debug FPS |

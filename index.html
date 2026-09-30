@@ -215,169 +215,97 @@
     box-shadow: 0 8px 24px rgba(16, 140, 70, 0.15);
   }
 
-  /* ---------- touch controls ---------- */
+  /* ---------- touch controls (Gọn gàng, tinh tế) ---------- */
   #touch { display: none; }
   body.touch #touch { display: block; }
   body.touch #hints .kb { display: none; }
   #joy {
-    position: fixed; left: 24px; bottom: 28px; z-index: 25;
-    width: 124px; height: 124px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 0%, rgba(255, 230, 240, 0.18) 100%);
-    border: 2px solid rgba(255, 255, 255, 0.65);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(14px);
+    position: fixed; left: 20px; bottom: 24px; z-index: 25;
+    width: 110px; height: 110px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.28) 0%, rgba(255, 230, 240, 0.12) 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), inset 0 1.5px 3px rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
     touch-action: none;
   }
   #joy .knob {
-    position: absolute; left: 50%; top: 50%; width: 50px; height: 50px;
+    position: absolute; left: 50%; top: 50%; width: 44px; height: 44px;
     border-radius: 50%;
     background: linear-gradient(135deg, #ffffff 0%, #ffdbe6 100%);
     border: 1.5px solid #ffffff;
-    box-shadow: 0 6px 16px rgba(255, 94, 136, 0.3), inset 0 2px 2px #fff;
+    box-shadow: 0 4px 12px rgba(255, 94, 136, 0.25), inset 0 1.5px 1.5px #fff;
     transform: translate(-50%,-50%);
   }
+  /* Cụm nút chính chỉ 3 nút tròn mọng nước không che màn hình */
   #tbtns {
     position: fixed; right: 18px; bottom: 22px; z-index: 25;
-    display: grid; grid-template-columns: repeat(2, 66px); gap: 11px;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
   }
+  .tbtn-row { display: flex; gap: 10px; align-items: center; }
   #tbtns button {
-    height: 58px; border-radius: 50%;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 235, 242, 0.4) 100%);
-    border: 1.8px solid rgba(255, 255, 255, 0.85);
-    box-shadow: 0 8px 20px rgba(242, 136, 159, 0.22), inset 0 1.5px 1px rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 235, 242, 0.45) 100%);
+    border: 1.6px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 6px 18px rgba(242, 136, 159, 0.2), inset 0 1.5px 1px #fff;
     backdrop-filter: blur(16px);
-    color: #3b2230; font: 900 13px/1.1 'Nunito', system-ui, sans-serif;
-    touch-action: none; transition: transform .15s ease, background .15s ease;
+    color: #3b2230; font: 900 12.5px/1.1 'Nunito', system-ui, sans-serif;
+    touch-action: none; transition: transform .15s ease;
   }
   #tbtns button:active {
-    transform: scale(0.92);
+    transform: scale(0.9);
     background: linear-gradient(135deg, #ff5e88, #ff82a3);
     color: #fff;
   }
-  #tbtns button.on {
-    background: linear-gradient(135deg, #ff5e88, #ff82a3);
-    color: #fff;
-    border-color: #fff;
-  }
-
-  /* ---------- quest chip ---------- */
-  #quest {
-    position: fixed; top: 102px; left: 16px; z-index: 20;
-    padding: 8px 16px; font-size: 13.5px; font-weight: 800; color: #2e1a26;
-    border-radius: 999px;
-  }
-
-  /* ---------- chụp ảnh ---------- */
-  #flash {
-    position: fixed; inset: 0; background: #fff; opacity: 0;
-    pointer-events: none; z-index: 55;
-  }
-  #flash.go { animation: flashAnim .35s ease; }
-  @keyframes flashAnim { 0% { opacity: .95 } 100% { opacity: 0 } }
-  #photoFrame { display: none; pointer-events: none; position: fixed; inset: 0; z-index: 40; }
-  #photoFrame::before {
-    content: ''; position: absolute; inset: 12px;
-    border: 5px solid #ff7b9e;
-    border-radius: 24px;
-    box-shadow: inset 0 0 0 5px rgba(255, 255, 255, 0.75), 0 0 30px rgba(255, 123, 158, 0.35);
-  }
-  #photoFrame .cap {
-    position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%);
-    padding: 10px 22px; font-weight: 800; font-size: 14px;
-    background: rgba(255, 255, 255, 0.85); color: #401f2e;
-    border-radius: 999px; border: 2px solid #fff;
-  }
-  body.photo #photoFrame { display: block; }
-  body.photo #settings, body.photo #title, body.photo #hints, body.photo #quest { opacity: 0; pointer-events: none; }
-
-  /* ---------- đổi màu heo ---------- */
-  #colorModal {
-    display: none; position: fixed; inset: 0; z-index: 45;
-    background: rgba(40, 20, 32, 0.35);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    align-items: center; justify-content: center;
-  }
-  #colorModal.show { display: flex; animation: modalPop .25s cubic-bezier(0.2, 0.9, 0.3, 1); }
-  @keyframes modalPop {
-    from { opacity: 0; transform: scale(0.93); }
-    to { opacity: 1; transform: scale(1); }
-  }
-  #colorModal .card {
-    padding: 22px; width: min(92vw, 360px);
-    display: flex; flex-direction: column; gap: 14px;
-    border-radius: 26px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 240, 246, 0.7));
-  }
-  #colorModal h3 {
-    font-size: 17px; font-weight: 900; color: #2e1a26;
-    display: flex; align-items: center; gap: 6px;
-  }
-  #colorModal input {
+  #tJump { width: 62px; height: 62px; font-size: 13.5px !important; }
+  #tDig, #tOink { width: 50px; height: 50px; font-size: 11.5px !important; }
+  #tMoreBtn {
+    width: 44px; height: 44px; border-radius: 50%;
     background: rgba(255, 255, 255, 0.85);
-    border: 1.5px solid rgba(255, 140, 170, 0.4);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
-    border-radius: 12px; color: var(--text-main);
-    font: 800 14px 'Nunito', system-ui, sans-serif;
-    padding: 10px 14px; outline: none; transition: border-color .2s;
+    border: 1.5px solid #fff; font-size: 18px;
+    box-shadow: 0 4px 12px rgba(255, 94, 136, 0.25);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
-  #colorModal input:focus { border-color: var(--accent); }
-  #swatches { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; }
-  #swatches .sw {
-    width: 36px; height: 36px; border-radius: 50%;
-    border: 2.5px solid #ffffff; cursor: pointer;
-    font-size: 15px; line-height: 1; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: transform .2s cubic-bezier(0.2, 0.9, 0.3, 1);
+
+  /* Drawer menu phụ (ẩn/hiện khi bấm nút ✨) */
+  #moreActions {
+    display: none; position: fixed; right: 18px; bottom: 155px; z-index: 25;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 240, 246, 0.65));
+    border: 1.5px solid #fff; border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), inset 0 1px 1px #fff;
+    backdrop-filter: blur(20px);
+    padding: 8px; flex-direction: column; gap: 7px;
+    animation: drawerPop .2s cubic-bezier(0.2, 0.9, 0.3, 1);
   }
-  #swatches .sw:hover { transform: scale(1.15); }
-  #swatches .sw.sel {
-    border-color: #fff;
-    box-shadow: 0 0 0 3px var(--accent), 0 6px 14px rgba(255, 94, 136, 0.4);
-    transform: scale(1.1);
+  @keyframes drawerPop {
+    from { opacity: 0; transform: translateY(8px) scale(0.92); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
-  #colorModal .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
-  #colorModal .row button {
-    border: 1.5px solid rgba(255, 255, 255, 0.85); border-radius: 12px;
-    background: rgba(255, 255, 255, 0.65); color: var(--text-main);
-    font: 800 13px 'Nunito', system-ui, sans-serif; padding: 9px 16px; cursor: pointer;
-    transition: all .2s ease;
+  #moreActions.open { display: flex; }
+  #moreActions button {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 12px; padding: 6px 12px;
+    font: 800 12px 'Nunito', system-ui, sans-serif; color: #3b2230;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    white-space: nowrap;
   }
-  #colorModal .row button:hover { background: #fff; transform: translateY(-1px); }
-  #swSave {
-    background: linear-gradient(135deg, #ff5e88, #ff82a3) !important;
-    color: #fff !important; border-color: #fff !important;
-    box-shadow: 0 4px 14px var(--accent-glow) !important;
-  }
+  #moreActions button:active { background: #ff5e88; color: #fff; }
 
   /* ---------- mobile: mini row + piano ---------- */
-  #miniRow {
-    display: none; position: fixed; right: 18px; bottom: 226px; z-index: 25;
-    gap: 9px;
-  }
-  #miniRow button {
-    width: 54px; height: 46px; border-radius: 14px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 235, 242, 0.4));
-    border: 1.5px solid rgba(255, 255, 255, 0.85);
-    box-shadow: 0 6px 16px rgba(242, 136, 159, 0.2);
-    backdrop-filter: blur(14px);
-    color: var(--text-main); font: 900 12px 'Nunito', system-ui, sans-serif;
-  }
   #piano {
-    display: none; position: fixed; right: 18px; bottom: 280px; z-index: 25; gap: 6px;
+    display: none; position: fixed; right: 18px; bottom: 160px; z-index: 25; gap: 5px;
   }
   #piano button {
-    width: 38px; height: 66px; border-radius: 10px;
+    width: 36px; height: 60px; border-radius: 9px;
     background: linear-gradient(180deg, #ffffff 0%, #fff0f4 100%);
     border: 1.5px solid rgba(255, 140, 170, 0.4);
     box-shadow: 0 4px 12px rgba(242, 136, 159, 0.25);
-    color: var(--accent); font: 900 16px 'Nunito', system-ui, sans-serif;
-    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px;
+    color: var(--accent); font: 900 15px 'Nunito', system-ui, sans-serif;
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 7px;
     transition: all .15s ease;
   }
   #piano button:active { background: var(--accent); color: #fff; transform: translateY(2px); }
   body.piano #piano { display: flex; }
-  body.touch #miniRow { display: flex; }
 
   @media (max-width: 760px) {
     #title { padding: 8px 12px; border-radius: 14px; top: 12px; left: 12px; }
@@ -445,6 +373,8 @@
   <span class="h kb"><kbd>Shift</kbd>chạy</span>
   <span class="h kb"><kbd>Space</kbd>nhảy</span>
   <span class="h kb"><kbd>E</kbd>ụt ịt</span>
+  <span class="h kb"><kbd>V</kbd>ủi đất 🥕</span>
+  <span class="h kb"><kbd>R</kbd>đua heo 🏁</span>
   <span class="h kb"><kbd>B</kbd>heo con</span>
   <span class="h kb"><kbd>F</kbd>ăn</span>
   <span class="h kb"><kbd>G</kbd>xịt 💨</span>
@@ -469,7 +399,13 @@
   <div class="card pill">
     <h3>🐷 Heo của bạn</h3>
     <input id="nameInput" maxlength="12" placeholder="Tên (tối đa 12 ký tự)">
+
+    <div class="modal-sec-title">Màu sắc</div>
     <div id="swatches"></div>
+
+    <div class="modal-sec-title">Phụ kiện đội đầu</div>
+    <div id="hats"></div>
+
     <div class="row">
       <button id="swClose">Thoát</button>
       <button id="swSave">Xong</button>
@@ -480,17 +416,21 @@
 <div id="touch">
   <div id="joy"><div class="knob"></div></div>
   <div id="tbtns">
-    <button id="tRun">CHẠY</button>
+    <button id="tMoreBtn" title="Chức năng thêm">✨</button>
     <button id="tJump">NHẢY</button>
-    <button id="tEat">ĂN</button>
-    <button id="tFart">XỊT</button>
-    <button id="tOink">ỤT ỊT</button>
-    <button id="tParty">TIỆC</button>
+    <div class="tbtn-row">
+      <button id="tDig">ỦI 🥕</button>
+      <button id="tOink">ỤT ỊT</button>
+    </div>
   </div>
-  <div id="miniRow">
-    <button id="tPhoto">ẢNH</button>
-    <button id="tSeek">TÌM</button>
-    <button id="tPiano">♪</button>
+  <div id="moreActions">
+    <button id="tRace">🏁 Đua heo</button>
+    <button id="tParty">🎉 Tiệc tùng</button>
+    <button id="tEat">🌽 Ăn cám</button>
+    <button id="tFart">💨 Xịt hơi</button>
+    <button id="tSeek">🔍 Trốn tìm</button>
+    <button id="tPhoto">📸 Chụp ảnh</button>
+    <button id="tPiano">♪ Đàn piano</button>
   </div>
   <div id="piano"></div>
 </div>

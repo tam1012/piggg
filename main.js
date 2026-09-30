@@ -517,6 +517,109 @@ function makeNameTag(name) {
   sp.scale.set(cv.width / 140, cv.height / 140, 1);
   return sp;
 }
+function makeHat(type) {
+  if (!type || type === 'none') return null;
+  const g = new THREE.Group();
+
+  if (type === 'nonla') {
+    // Nón lá Việt Nam
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.46, 0.26, 20), mat(0xdec37c));
+    cone.position.set(0, 0.52, -0.02);
+    cone.rotation.x = -0.15;
+    cone.castShadow = true;
+    g.add(cone);
+    // Vành nón lá
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.015, 6, 20), mat(0xc9aa5f));
+    rim.position.set(0, 0.39, 0.02);
+    rim.rotation.x = Math.PI / 2 - 0.15;
+    g.add(rim);
+    // Quai nón hồng
+    const strap = new THREE.Mesh(new THREE.TorusGeometry(0.38, 0.018, 6, 16, Math.PI), mat(0xff5e88));
+    strap.position.set(0, 0.35, 0.04);
+    strap.rotation.x = Math.PI / 2;
+    g.add(strap);
+  } else if (type === 'crown') {
+    // Vương miện vàng
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.22, 0.14, 14, 1, true), new THREE.MeshPhongMaterial({ color: 0xffd700, shininess: 90 }));
+    base.position.set(0, 0.48, 0);
+    g.add(base);
+    // 5 đỉnh chóp vương miện
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2;
+      const spike = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.13, 4), new THREE.MeshPhongMaterial({ color: 0xffd700, shininess: 90 }));
+      spike.position.set(Math.cos(a) * 0.22, 0.58, Math.sin(a) * 0.22);
+      g.add(spike);
+      // Hạt ngọc đỏ trên đỉnh
+      const gem = new THREE.Mesh(new THREE.SphereGeometry(0.026, 6, 5), new THREE.MeshPhongMaterial({ color: 0xff1e56, shininess: 100 }));
+      gem.position.set(Math.cos(a) * 0.22, 0.65, Math.sin(a) * 0.22);
+      g.add(gem);
+    }
+  } else if (type === 'glasses') {
+    // Kính râm ngầu
+    const glassMat = new THREE.MeshPhongMaterial({ color: 0x111115, shininess: 110 });
+    const frameMat = mat(0xffc107);
+    for (const sx of [-0.21, 0.21]) {
+      const lens = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.12, 0.04), glassMat);
+      lens.position.set(sx, 0.15, 0.48);
+      g.add(lens);
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.14, 0.02), frameMat);
+      frame.position.set(sx, 0.15, 0.47);
+      g.add(frame);
+    }
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.025, 0.02), frameMat);
+    bridge.position.set(0, 0.16, 0.48);
+    g.add(bridge);
+  } else if (type === 'ribbon') {
+    // Nơ hồng công chúa
+    const bowMat = mat(0xff4071);
+    const knot = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 6), mat(0xff7399));
+    knot.position.set(0, 0.5, 0.12);
+    g.add(knot);
+    for (const sx of [-1, 1]) {
+      const wing = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.24, 4), bowMat);
+      wing.position.set(sx * 0.13, 0.5, 0.12);
+      wing.rotation.z = sx * (Math.PI / 2);
+      g.add(wing);
+    }
+  } else if (type === 'flower') {
+    // Bông hoa cài tai
+    const petalMat = mat(0xfff066);
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2;
+      const petal = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 5), petalMat);
+      petal.position.set(0.32 + Math.cos(a) * 0.07, 0.38 + Math.sin(a) * 0.07, 0.22);
+      petal.scale.set(1, 1, 0.5);
+      g.add(petal);
+    }
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 5), mat(0xff5533));
+    core.position.set(0.32, 0.38, 0.24);
+    g.add(core);
+  }
+
+  g.userData.type = type;
+  return g;
+}
+
+function setPigHat(pig, type) {
+  if (pig.hat) {
+    pig.head.remove(pig.hat);
+    pig.hat.traverse(o => {
+      if (o.isMesh) {
+        o.geometry.dispose();
+        if (Array.isArray(o.material)) o.material.forEach(m => m.dispose());
+        else o.material.dispose();
+      }
+    });
+    pig.hat = null;
+  }
+  pig.hatType = type || 'none';
+  const hat = makeHat(type);
+  if (hat) {
+    pig.hat = hat;
+    pig.head.add(hat);
+  }
+}
+
 function setPigName(pig, name) {
   pig.name = name;
   if (pig.tag) {
@@ -689,6 +792,9 @@ function spawnPlayer() {
   let savedName = 'Heo Ú';
   try { savedName = localStorage.getItem('pigName') || 'Heo Ú'; } catch (e) { /* bỏ qua */ }
   setPigName(player, savedName);
+  let savedHat = 'nonla';
+  try { savedHat = localStorage.getItem('pigHat') || 'nonla'; } catch (e) { /* bỏ qua */ }
+  setPigHat(player, savedHat);
 }
 function spawnNpc(i) {
   const pig = makePig({ scale: rand(0.85, 1.05) });
@@ -698,6 +804,11 @@ function spawnNpc(i) {
   scene.add(pig.group);
   pigs.push(pig);
   setPigName(pig, NPC_NAMES[i % NPC_NAMES.length]);
+  // Tặng ngẫu nhiên nón cho 1 vài bé heo NPC cho sinh động
+  if (Math.random() < 0.45) {
+    const npcHat = pick(['nonla', 'crown', 'glasses', 'ribbon', 'flower']);
+    setPigHat(pig, npcHat);
+  }
 }
 spawnPlayer();
 for (let i = 0; i < NPC_NAMES.length; i++) spawnNpc(i);
@@ -958,6 +1069,37 @@ const sfx = {
       src.start(t);
     }
   },
+  bubble() {
+    if (!S.sound || !this.ctx) return;
+    const ctx = this.ensure();
+    for (let i = 0; i < 3; i++) {
+      const t = ctx.currentTime + i * 0.06;
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      const f = rand(400, 750);
+      osc.frequency.setValueAtTime(f, t);
+      osc.frequency.exponentialRampToValueAtTime(f * 1.6, t + 0.08);
+      const gn = ctx.createGain();
+      gn.gain.setValueAtTime(0.001, t);
+      gn.gain.linearRampToValueAtTime(0.25, t + 0.02);
+      gn.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+      osc.connect(gn).connect(this.master);
+      osc.start(t); osc.stop(t + 0.1);
+    }
+  },
+  dig() {
+    if (!S.sound || !this.ctx) return;
+    const ctx = this.ensure(), t = ctx.currentTime;
+    const src = ctx.createBufferSource();
+    src.buffer = this.noiseBuf(0.18);
+    const flt = ctx.createBiquadFilter();
+    flt.type = 'bandpass'; flt.frequency.value = 450;
+    const gn = ctx.createGain();
+    gn.gain.setValueAtTime(0.4, t);
+    gn.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    src.connect(flt).connect(gn).connect(this.master);
+    src.start(t);
+  },
   chirp() {
     if (!S.sound || !this.ctx) return;
     const ctx = this.ensure(), t = ctx.currentTime;
@@ -994,6 +1136,58 @@ const sfx = {
       src.connect(flt).connect(gn).connect(this.master);
       src.start();
       this.rainNode = { src, gn };
+    }
+  },
+  // Nhạc nền BGM Kalimba đồng quê êm dịu, sinh bằng WebAudio
+  bgm: {
+    timer: null,
+    step: 0,
+    // Pentatonic F major / D minor trong trẻo (F4, G4, A4, C5, D5, E5, F5)
+    notes: [349.23, 392.00, 440.00, 523.25, 587.33, 659.25, 698.46],
+    pattern: [
+      0, 2, 3, 2,  4, 3, 2, 0,
+      1, 3, 4, 3,  5, 4, 3, 1,
+      0, 2, 4, 5,  4, 3, 2, 1,
+      0, -1, 2, -1, 3, 2, 0, -1
+    ],
+    playNote(freq) {
+      if (freq <= 0 || !sfx.ctx) return;
+      const ctx = sfx.ctx, t = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      // Hài âm thứ 2 tạo độ nẩy đặc trưng của phím đàn Kalimba
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(freq * 2.76, t);
+      const gn = ctx.createGain();
+      gn.gain.setValueAtTime(0.0001, t);
+      gn.gain.linearRampToValueAtTime(0.09, t + 0.015);
+      gn.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+      const gn2 = ctx.createGain();
+      gn2.gain.setValueAtTime(0.0001, t);
+      gn2.gain.linearRampToValueAtTime(0.03, t + 0.008);
+      gn2.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+      osc.connect(gn).connect(sfx.master);
+      osc2.connect(gn2).connect(sfx.master);
+      osc.start(t); osc.stop(t + 0.95);
+      osc2.start(t); osc2.stop(t + 0.3);
+    },
+    tick() {
+      if (!S.sound) return;
+      const idx = this.pattern[this.step % this.pattern.length];
+      if (idx >= 0 && idx < this.notes.length) {
+        this.playNote(this.notes[idx]);
+      }
+      this.step++;
+    },
+    start() {
+      if (this.timer) return;
+      this.step = 0;
+      this.timer = setInterval(() => this.tick(), 240);
+    },
+    stop() {
+      if (this.timer) { clearInterval(this.timer); this.timer = null; }
     }
   },
 };
@@ -1038,6 +1232,49 @@ function spawnHearts(x, y, z, n = 3) {
     sp.position.set(x + rand(-0.6, 0.6), y + rand(0.4, 1), z + rand(-0.6, 0.6));
     scene.add(sp);
     floaters.push({ sp, life: rand(0.9, 1.4), vy: 0.7 });
+  }
+}
+
+/* ---------------- bong bóng xà phòng ao nước ---------------- */
+const BUBBLE_N = 36;
+const bubbleMat = new THREE.MeshPhongMaterial({
+  color: 0xffffff, transparent: true, opacity: 0.65,
+  shininess: 120, specular: 0xffb8d2, depthWrite: false
+});
+const bubbles = [];
+{
+  const bGeo = new THREE.SphereGeometry(0.18, 12, 10);
+  for (let i = 0; i < BUBBLE_N; i++) {
+    const m = new THREE.Mesh(bGeo, bubbleMat.clone());
+    m.visible = false;
+    scene.add(m);
+    bubbles.push({ m, life: 0, maxLife: 1, v: new THREE.Vector3(), baseScale: 1 });
+  }
+}
+function spawnBubbles(x, y, z, n = 16) {
+  let used = 0;
+  for (const b of bubbles) {
+    if (b.life > 0) continue;
+    b.m.position.set(x + rand(-0.6, 0.6), y + rand(0, 0.3), z + rand(-0.6, 0.6));
+    b.v.set(rand(-0.6, 0.6), rand(1.2, 2.8), rand(-0.6, 0.6));
+    b.maxLife = b.life = rand(1.2, 2.4);
+    b.baseScale = rand(0.6, 1.4);
+    b.m.scale.setScalar(b.baseScale);
+    b.m.visible = true;
+    if (++used >= n) break;
+  }
+}
+function updateBubbles(dt, t) {
+  for (const b of bubbles) {
+    if (b.life <= 0) continue;
+    b.life -= dt;
+    b.m.position.addScaledVector(b.v, dt);
+    b.m.position.x += Math.sin(t * 3 + b.m.position.y) * 0.4 * dt;
+    b.v.y = Math.max(0.5, b.v.y - 0.2 * dt);
+    const progress = 1 - b.life / b.maxLife;
+    b.m.material.opacity = (1 - progress * 0.7) * 0.75;
+    b.m.scale.setScalar(b.baseScale * (1 + progress * 0.5));
+    if (b.life <= 0) b.m.visible = false;
   }
 }
 
@@ -1296,11 +1533,28 @@ function playerUpdate(dt, t) {
   if (player.pos.y <= gy) {
     if (!player.grounded && player.vy < -6) {
       if (inMud) { spawnSplash(player.pos.x, 0.2, player.pos.z, 16); sfx.splash(); player.mudLevel = 1; showToast('Ọt… lấm bùn hết rồi 🐷'); }
-      else if (inPond) { spawnSplash(player.pos.x, 0.2, player.pos.z, 16, 0x7db4dd); sfx.splash(); }
+      else if (inPond) {
+        spawnSplash(player.pos.x, 0.2, player.pos.z, 16, 0x7db4dd); sfx.splash();
+        if (player.mudLevel > 0.05) {
+          player.mudLevel = 0;
+          spawnBubbles(player.pos.x, 0.4, player.pos.z, 24);
+          sfx.bubble();
+          sparkle(player.pos.x, 1.2, player.pos.z, 0xffffff, 14);
+          showToast('Tắm ao sạch bong kin kít! 🫧✨');
+        }
+      }
       else sfx.oink(0.7, 0.15);
     }
     player.pos.y = gy; player.vy = 0; player.grounded = true;
   } else player.grounded = false;
+
+  // Lội ao khi đang có bùn cũng tự sủi bọt rửa sạch
+  if (inPond && player.mudLevel > 0.05 && Math.random() < dt * 4) {
+    player.mudLevel = Math.max(0, player.mudLevel - dt * 1.5);
+    spawnBubbles(player.pos.x, 0.25, player.pos.z, 4);
+    sfx.bubble();
+    if (player.mudLevel === 0) showToast('Đã gột sạch bùn rồi! 🫧');
+  }
   if (jumpQueued) {
     jumpQueued = false;
     if (player.grounded) { player.vy = 8.6; player.grounded = false; sfx.oink(1.4, 0.2); }
@@ -1344,6 +1598,69 @@ function spawnBaby() {
   pigCountEl.textContent = pigs.length;
 }
 
+/* ---------------- ủi đất tìm kho báu ---------------- */
+let digCd = 0;
+const DIG_ITEMS = [
+  { name: 'Cà rốt giòn ngọt', icon: '🥕', type: 'carrot', prob: 0.65 },
+  { name: 'Đồng xu vàng lấp lánh', icon: '🪙', type: 'coin', prob: 0.18 },
+  { name: 'Nấm ma thuật phát sáng', icon: '🍄', type: 'shroom', prob: 0.12 },
+  { name: 'Chú giun đất nghịch ngợm', icon: '🐛', type: 'worm', prob: 0.05 },
+];
+let digScore = 0;
+
+function doDig() {
+  if (digCd > 0) return;
+  digCd = 1.2;
+  sfx.dig();
+
+  // Vị trí trước mũi heo
+  const fx = player.pos.x + Math.sin(player.yaw) * 0.9;
+  const fz = player.pos.z + Math.cos(player.yaw) * 0.9;
+
+  // Hạt đất và cỏ văng tung tóe
+  spawnSplash(fx, 0.15, fz, 16, 0x6e4d2a);
+  spawnSplash(fx, 0.25, fz, 8, 0x4a8c38);
+
+  // Đầu heo gật xuống ủi đất
+  player.head.rotation.x = 0.55;
+  setTimeout(() => { if (player) player.head.rotation.x = 0; }, 350);
+
+  // Chọn vật phẩm
+  const r = Math.random();
+  let cum = 0, item = DIG_ITEMS[0];
+  for (const it of DIG_ITEMS) {
+    cum += it.prob;
+    if (r <= cum) { item = it; break; }
+  }
+
+  // Tạo sprite vật phẩm bay lên khỏi mặt đất
+  const sp = textSprite(item.icon, '#ffffff');
+  sp.scale.set(0.7, 0.7, 1);
+  sp.position.set(fx, 0.4, fz);
+  scene.add(sp);
+  floaters.push({ sp, life: 1.4, vy: 1.2 });
+
+  if (item.type === 'carrot') {
+    sfx.crunch();
+    spawnHearts(player.pos.x, 1.6, player.pos.z, 2);
+    digScore += 1;
+    showToast(`Ủi trúng ${item.icon} ${item.name}! Ngon tuyệt vời!`);
+  } else if (item.type === 'coin') {
+    sfx.pop();
+    sparkle(fx, 0.8, fz, 0xffd700, 14);
+    digScore += 5;
+    showToast(`Đào được ${item.icon} ${item.name}! (+5 xu)`);
+  } else if (item.type === 'shroom') {
+    sfx.bubble();
+    sparkle(fx, 0.8, fz, 0xff40bb, 14);
+    player.vy = 6.5; // nhún nảy tưng tưng
+    showToast(`Ăn trúng ${item.icon} ${item.name}! Nhảy tưng tưng! 🍄✨`);
+  } else {
+    sfx.squeal();
+    showToast(`Đào trúng ${item.icon} ${item.name}! Nó bò mất tiêu rồi!`);
+  }
+}
+
 /* ---------------- troll: xịt hơi ---------------- */
 function doFart() {
   const bx = player.pos.x - Math.sin(player.yaw) * 0.9;
@@ -1375,7 +1692,8 @@ addEventListener('keydown', (e) => {
   if (e.code === 'KeyB') spawnBaby();
   if (e.code === 'KeyF') tryEat();
   if (e.code === 'KeyG') doFart();
-  if (e.code === 'KeyV') renamePlayer();
+  if (e.code === 'KeyV') doDig();
+  if (e.code === 'KeyR') startRace();
   if (e.code.startsWith('Digit')) {
     const n = parseInt(e.code.slice(5), 10);
     if (n >= 1 && n <= 7) playNote(n - 1);
@@ -1456,14 +1774,22 @@ const bindBtn = (id, down, up) => {
   if (up) el.addEventListener('pointerup', up);
 };
 bindBtn('tJump', () => { jumpQueued = true; });
+bindBtn('tDig', () => doDig());
+bindBtn('tRace', () => { $('moreActions')?.classList.remove('open'); startRace(); });
 bindBtn('tOink', () => playOink(player));
-bindBtn('tEat', () => tryEat());
-bindBtn('tFart', () => doFart());
-bindBtn('tParty', () => startParty());
-bindBtn('tPhoto', () => capturePhoto());
-bindBtn('tSeek', () => startSeek());
-bindBtn('tPiano', () => { document.body.classList.toggle('piano'); });
-bindBtn('tRun', () => { touchRun = !touchRun; $('tRun').classList.toggle('on', touchRun); });
+bindBtn('tEat', () => { $('moreActions')?.classList.remove('open'); tryEat(); });
+bindBtn('tFart', () => { $('moreActions')?.classList.remove('open'); doFart(); });
+bindBtn('tParty', () => { $('moreActions')?.classList.remove('open'); startParty(); });
+bindBtn('tPhoto', () => { $('moreActions')?.classList.remove('open'); capturePhoto(); });
+bindBtn('tSeek', () => { $('moreActions')?.classList.remove('open'); startSeek(); });
+bindBtn('tPiano', () => { $('moreActions')?.classList.remove('open'); document.body.classList.toggle('piano'); });
+const moreActionsEl = $('moreActions');
+if ($('tMoreBtn')) {
+  $('tMoreBtn').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    moreActionsEl?.classList.toggle('open');
+  });
+}
 
 /* ---------------- chạm vào heo → nó bỏ chạy ---------------- */
 const raycaster = new THREE.Raycaster();
@@ -1514,7 +1840,13 @@ $('btnSound').addEventListener('click', () => {
   const b = $('btnSound');
   b.textContent = S.sound ? 'Bật' : 'Tắt';
   b.classList.toggle('on', S.sound);
-  if (S.sound) { sfx.ensure(); sfx.pop(); }
+  if (S.sound) {
+    sfx.ensure();
+    sfx.pop();
+    sfx.bgm.start();
+  } else {
+    sfx.bgm.stop();
+  }
   sfx.setRain(S.sound && S.weather === 'rain');
 });
 function applyQuality() {
@@ -1806,6 +2138,150 @@ function updateSeek(dt) {
   else if (seek.t <= 0) endSeek(false);
 }
 
+// ---------- đua heo ----------
+const race = {
+  active: false,
+  state: 'idle', // 'countdown', 'running', 'finished'
+  timer: 0,
+  racers: [],
+  finishZ: -18,
+  winner: null,
+};
+
+function startRace() {
+  if (race.active) return;
+  race.active = true;
+  race.state = 'countdown';
+  race.timer = 3.6;
+  race.winner = null;
+
+  // Lấy player + 4 heo NPC ngẫu nhiên
+  const npcs = pigs.filter(p => !p.isPlayer && !p.isBaby);
+  const selectedNpc = npcs.sort(() => Math.random() - 0.5).slice(0, 4);
+  race.racers = [player, ...selectedNpc];
+
+  // Xếp hàng ở vạch xuất phát
+  const startZ = 15;
+  const startX = [-6, -3, 0, 3, 6];
+  race.racers.forEach((p, idx) => {
+    setPigPos(p, startX[idx], startZ);
+    p.yaw = Math.PI; // quay về phía bắc (chuồng)
+    p.speed = 0;
+    p.frozen = true;
+    p.raceSpeed = p.isPlayer ? 0 : rand(3.8, 5.8);
+  });
+
+  showToast('ĐUA HEO! Chuẩn bị… 🏁', 1200);
+  sfx.chirp();
+}
+
+function updateRace(dt, t) {
+  if (!race.active) return;
+
+  if (race.state === 'countdown') {
+    const prevInt = Math.ceil(race.timer);
+    race.timer -= dt;
+    const curInt = Math.ceil(race.timer);
+    if (curInt !== prevInt && curInt > 0) {
+      sfx.pop();
+      showToast(`${curInt}… 🏁`, 900);
+    }
+    if (race.timer <= 0) {
+      race.state = 'running';
+      race.racers.forEach(p => { p.frozen = false; });
+      sfx.whistle();
+      showToast('XUẤT PHÁT! CHẠY ĐI! 🏃💨', 1500);
+    }
+  } else if (race.state === 'running') {
+    // Di chuyển các heo NPC về đích
+    for (const p of race.racers) {
+      if (p.isPlayer) continue;
+      p.pos.z -= p.raceSpeed * dt;
+      p.speed = p.raceSpeed;
+      p.yaw = Math.PI;
+    }
+
+    // Kiểm tra con nào cán đích trước
+    for (const p of race.racers) {
+      if (p.pos.z <= race.finishZ) {
+        race.winner = p;
+        race.state = 'finished';
+        burstConfetti(p.pos.x, 2, p.pos.z);
+        sfx.fanfare();
+        const winName = p.isPlayer ? 'BẠN' : p.name;
+        showToast(`🏆 ${winName} ĐÃ VỀ NHẤT! CHÚC MỪNG! 🎉`, 4500);
+        setTimeout(() => {
+          race.active = false;
+          race.racers.forEach(r => {
+            r.state = 'wander';
+            r.stateT = rand(2, 5);
+          });
+        }, 5000);
+        break;
+      }
+    }
+  }
+}
+
+// ---------- đom đóm mùa hè ban đêm ----------
+const FIREFLY_N = 36;
+const fireflyMat = new THREE.MeshBasicMaterial({ color: 0xe6ff66 });
+const fireflies = [];
+{
+  const fGeo = new THREE.SphereGeometry(0.045, 6, 5);
+  for (let i = 0; i < FIREFLY_N; i++) {
+    const m = new THREE.Mesh(fGeo, fireflyMat);
+    m.visible = false;
+    scene.add(m);
+    fireflies.push({
+      m,
+      cx: rand(-28, 28), cz: rand(-22, 16),
+      r: rand(1.5, 4.5), speed: rand(0.5, 1.2),
+      ph: rand(0, Math.PI * 2),
+      baseY: rand(0.6, 2.2)
+    });
+  }
+}
+function updateFireflies(dt, t) {
+  // Chỉ hiện khi chiều muộn hoặc đêm
+  const isNight = S.time === 'night' || (sunDir && sunDir.y < 0.12);
+  for (const f of fireflies) {
+    if (!isNight) {
+      f.m.visible = false;
+      continue;
+    }
+    f.m.visible = true;
+    const ang = t * f.speed + f.ph;
+    f.m.position.set(
+      f.cx + Math.cos(ang) * f.r,
+      f.baseY + Math.sin(t * 2.5 + f.ph) * 0.45,
+      f.cz + Math.sin(ang) * f.r
+    );
+    // Nhấp nháy nhẹ
+    const blink = Math.sin(t * 4 + f.ph);
+    f.m.scale.setScalar(blink > 0 ? (0.6 + blink * 0.7) : 0.001);
+  }
+}
+
+// ---------- bóng thoại emoji biểu cảm ----------
+let bubbleTimer = 0;
+const PIG_EMOJIS = ['💤', '🍎', '🌽', '💖', '🎵', '🌸', '✨', '💨', '😋', '🥳'];
+function updateEmojiBubbles(dt) {
+  bubbleTimer -= dt;
+  if (bubbleTimer <= 0) {
+    bubbleTimer = rand(3.5, 7.5);
+    const p = pick(pigs);
+    if (!p) return;
+    const isNight = S.time === 'night' || (sunDir && sunDir.y < 0.05);
+    const emoji = isNight ? '💤' : pick(PIG_EMOJIS);
+    const sp = textSprite(emoji, '#ffffff', 'rgba(255,140,170,0.8)');
+    sp.scale.set(0.65, 0.65, 1);
+    sp.position.copy(p.group.position).add(new THREE.Vector3(0, 2.2 * p.scale, 0));
+    scene.add(sp);
+    floaters.push({ sp, life: 1.6, vy: 0.6 });
+  }
+}
+
 // ---------- đá táo ----------
 const ball = { mesh: null, pos: new THREE.Vector3(0, 0, -4), v: new THREE.Vector3(), goals: 0, kickCd: 0 };
 {
@@ -1899,9 +2375,22 @@ function setPigColor(pig, hex) {
   for (const m of pig.paintDark) m.color.copy(dark);
   pig.bodyColor = hex;
 }
+const HATS = [
+  ['none', 'Trọc lóc', '❌'],
+  ['nonla', 'Nón lá', '👒'],
+  ['crown', 'Vương miện', '👑'],
+  ['glasses', 'Kính râm', '🕶️'],
+  ['ribbon', 'Nơ hồng', '🎀'],
+  ['flower', 'Hoa cài', '🌸'],
+];
+const hatsEl = $('hats');
+let tempHat = 'none';
+
 function openColorModal() {
   nameInput.value = player.name === 'Heo Ú' ? '' : (player.name || '');
   [...swatchesEl.children].forEach(btn => btn.classList.toggle('sel', btn.dataset.c === player.bodyColor));
+  tempHat = player.hatType || 'none';
+  [...hatsEl.children].forEach(btn => btn.classList.toggle('sel', btn.dataset.h === tempHat));
   colorModal.classList.add('show');
 }
 function closeColorModal() { colorModal.classList.remove('show'); }
@@ -1919,18 +2408,43 @@ for (const [n, c, tag] of PIG_COLORS) {
   });
   swatchesEl.appendChild(b);
 }
+for (const [hId, hName, icon] of HATS) {
+  const b = document.createElement('button');
+  b.className = 'hat-opt';
+  b.textContent = `${icon} ${hName}`;
+  b.dataset.h = hId;
+  b.addEventListener('click', () => {
+    tempHat = hId;
+    setPigHat(player, hId);
+    [...hatsEl.children].forEach(x => x.classList.toggle('sel', x === b));
+  });
+  hatsEl.appendChild(b);
+}
+
 $('swSave').addEventListener('click', () => {
   const name = (nameInput.value.trim() || 'Heo Ú').slice(0, 12);
   setPigName(player, name);
-  try { localStorage.setItem('pigName', name); localStorage.setItem('pigColor', player.bodyColor); } catch (e) { /* bỏ qua */ }
+  try {
+    localStorage.setItem('pigName', name);
+    localStorage.setItem('pigColor', player.bodyColor);
+    localStorage.setItem('pigHat', player.hatType || 'none');
+  } catch (e) { /* bỏ qua */ }
   closeColorModal();
-  showToast('Xong! Chào ' + name + ' 🐷');
+  showToast('Xong! Nhìn xịn xò lắm ' + name + ' ơi 🐷✨');
 });
-$('swClose').addEventListener('click', closeColorModal);
+$('swClose').addEventListener('click', () => {
+  try {
+    const savedHat = localStorage.getItem('pigHat') || 'none';
+    setPigHat(player, savedHat);
+  } catch (e) {}
+  closeColorModal();
+});
 colorModal.addEventListener('click', (e) => { if (e.target === colorModal) closeColorModal(); });
 try {
   const savedColor = localStorage.getItem('pigColor');
   if (savedColor) setPigColor(player, savedColor);
+  const savedHat = localStorage.getItem('pigHat') || 'nonla'; // mặc định nón lá cho heo người chơi
+  setPigHat(player, savedHat);
 } catch (e) { /* bỏ qua */ }
 
 // piano mobile: dựng 7 phím
@@ -1973,7 +2487,12 @@ function loop() {
   updateRain(dt);
   updateConfetti(dt, t);
   updateCollectibles(dt, t);
+  updateBubbles(dt, t);
+  if (digCd > 0) digCd -= dt;
   updateSeek(dt);
+  updateRace(dt, t);
+  updateFireflies(dt, t);
+  updateEmojiBubbles(dt);
   updateBall(dt);
   questT += dt;
   if (questT > 0.2) { questT = 0; updateQuest(); }
