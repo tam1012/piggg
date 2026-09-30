@@ -817,10 +817,13 @@ window.__dbg = () => ({ collect, seek, ball, pigs, race, get digScore() { return
 
 /* ---------------- va chạm ---------------- */
 function resolveCollisions(pos, prev) {
-  // chuồng (AABB)
-  if (Math.abs(pos.x - BARN.x) < BARN.hx + 0.35 && Math.abs(pos.z - BARN.z) < BARN.hz + 0.35) {
-    if (Math.abs(pos.x - BARN.x) / (BARN.hx) > Math.abs(pos.z - BARN.z) / (BARN.hz)) pos.x = prev.x;
-    else pos.z = prev.z;
+  // chuồng (AABB) — luôn đẩy heo ra mặt gần nhất, không bao giờ kẹt bên trong
+  const bx = pos.x - BARN.x, bz = pos.z - BARN.z;
+  if (Math.abs(bx) < BARN.hx + 0.35 && Math.abs(bz) < BARN.hz + 0.35) {
+    const penX = BARN.hx + 0.35 - Math.abs(bx);
+    const penZ = BARN.hz + 0.35 - Math.abs(bz);
+    if (penX <= penZ) pos.x = BARN.x + (bx >= 0 ? 1 : -1) * (BARN.hx + 0.35);
+    else pos.z = BARN.z + (bz >= 0 ? 1 : -1) * (BARN.hz + 0.35);
   }
   const T = 0.4;
   const wallX = (wx, z0, z1) => {
@@ -2151,7 +2154,7 @@ const race = {
   state: 'idle', // 'countdown', 'running', 'finished'
   timer: 0,
   racers: [],
-  finishZ: -18,
+  finishZ: -13.5, // trước cửa chuồng, KHÔNG nằm trong footprint chuồng
   winner: null,
 };
 
