@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Trại Heo — Farm 3D cho vui</title>
+<style>
+  :root {
+    --panel-bg: linear-gradient(135deg, rgba(28, 32, 42, 0.62), rgba(16, 18, 26, 0.48));
+    --panel-border: rgba(255, 255, 255, 0.16);
+    --text: #eef2f7;
+    --text-dim: #b3bcc9;
+    --accent: #f2889f;
+    --key-bg: rgba(255, 255, 255, 0.14);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0b1026; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #app { position: fixed; inset: 0; }
+  canvas { display: block; outline: none; touch-action: none; }
+
+  /* ---------- loading ---------- */
+  #loading {
+    position: fixed; inset: 0; z-index: 60;
+    background: #0b1026;
+    display: flex; flex-direction: column; gap: 14px;
+    align-items: center; justify-content: center;
+    transition: opacity .6s ease;
+  }
+  #loading.hide { opacity: 0; pointer-events: none; }
+  #loading .pig { font-size: 56px; animation: bob 1.1s ease-in-out infinite; }
+  #loading .msg { font-size: 15px; color: var(--text-dim); letter-spacing: .04em; }
+  @keyframes bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
+
+  /* ---------- shared glass pill ---------- */
+  .pill {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+  }
+
+  /* ---------- title ---------- */
+  #title {
+    position: fixed; top: 14px; left: 16px; z-index: 20;
+    padding: 10px 14px 11px;
+    line-height: 1.25;
+    transition: opacity .4s ease, transform .4s ease;
+  }
+  #title h1 { font-size: 20px; font-weight: 800; letter-spacing: .06em; }
+  #title h1 .oink { color: var(--accent); }
+  #title .sub { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
+  #stats { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+  #stats b { color: var(--text); font-weight: 600; }
+
+  /* ---------- settings ---------- */
+  #settings {
+    position: fixed; top: 14px; right: 16px; z-index: 20;
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;
+    max-width: 62vw;
+    transition: opacity .4s ease, transform .4s ease;
+  }
+  .set { display: flex; align-items: center; gap: 8px; padding: 7px 10px; }
+  .set label { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; color: var(--text-dim); text-transform: uppercase; }
+  .set select {
+    appearance: none; -webkit-appearance: none;
+    background: var(--key-bg); color: var(--text);
+    border: 1px solid var(--panel-border); border-radius: 8px;
+    font: 600 12.5px/1 system-ui, sans-serif;
+    padding: 6px 22px 6px 9px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23aeb6c2' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+  }
+  .set select option { background: #161a22; color: var(--text); }
+  .set button {
+    background: var(--key-bg); color: var(--text);
+    border: 1px solid var(--panel-border); border-radius: 8px;
+    font: 700 12.5px/1 system-ui, sans-serif;
+    padding: 7px 12px; cursor: pointer; min-width: 44px;
+  }
+  .set button.on { color: var(--accent); border-color: rgba(242,136,159,.5); }
+  body.cinematic #settings, body.cinematic #title, body.cinematic #hints { opacity: 0; pointer-events: none; transform: translateY(-6px); }
+
+  /* ---------- hints ---------- */
+  #hints {
+    position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
+    z-index: 20; padding: 9px 16px;
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: center;
+    max-width: 94vw;
+    transition: opacity .4s ease;
+  }
+  #hints .h { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+  #hints kbd {
+    font: 700 11px/1 ui-monospace, Consolas, monospace;
+    background: var(--key-bg); border: 1px solid var(--panel-border);
+    border-radius: 5px; padding: 3px 6px; color: var(--text);
+    margin-right: 5px;
+  }
+
+  /* ---------- toast ---------- */
+  #toast {
+    position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%) translateY(8px);
+    z-index: 30; padding: 9px 16px;
+    font-size: 13.5px; font-weight: 600;
+    opacity: 0; transition: opacity .3s ease, transform .3s ease;
+    pointer-events: none; max-width: 86vw; text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- debug ---------- */
+  #debug {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    z-index: 25; padding: 6px 12px;
+    font: 12px/1.5 ui-monospace, Consolas, monospace; color: #9fe0a8;
+    display: none; white-space: pre;
+  }
+
+  /* ---------- touch controls ---------- */
+  #touch { display: none; }
+  body.touch #touch { display: block; }
+  body.touch #hints .kb { display: none; }
+  #joy {
+    position: fixed; left: 22px; bottom: 26px; z-index: 25;
+    width: 118px; height: 118px; border-radius: 50%;
+    background: rgba(12,14,18,.35); border: 1.5px solid rgba(255,255,255,.25);
+    touch-action: none;
+  }
+  #joy .knob {
+    position: absolute; left: 50%; top: 50%; width: 48px; height: 48px;
+    border-radius: 50%; background: rgba(255,255,255,.35);
+    transform: translate(-50%,-50%);
+  }
+  #tbtns {
+    position: fixed; right: 16px; bottom: 20px; z-index: 25;
+    display: grid; grid-template-columns: repeat(2, 64px); gap: 10px;
+  }
+  #tbtns button {
+    height: 56px; border-radius: 50%;
+    background: rgba(12,14,18,.55); border: 1.5px solid rgba(255,255,255,.28);
+    color: var(--text); font: 700 13px/1.1 system-ui, sans-serif;
+    touch-action: none;
+  }
+  #tbtns button:active { background: rgba(242,136,159,.4); }
+  #tbtns button.on { background: rgba(242,136,159,.45); border-color: var(--accent); }
+
+  @media (max-width: 760px) {
+    #title { padding: 6px 9px; border-radius: 10px; }
+    #title h1 { font-size: 13px; }
+    #title .sub { display: none; }
+    #stats { font-size: 10px; margin-top: 3px; }
+    #settings { top: 10px; right: 10px; gap: 6px; max-width: 74vw; }
+    .set { padding: 4px 6px; border-radius: 10px; }
+    .set label { display: none; }
+    .set select { font-size: 11px; padding: 4px 18px 4px 7px; }
+    .set button { font-size: 11px; padding: 5px 9px; min-width: 40px; }
+    #hints { bottom: 10px; padding: 7px 10px; gap: 10px; }
+    #hints .h { font-size: 10.5px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div id="loading">
+  <div class="pig">🐷</div>
+  <div class="msg">Đang dọn chuồng cho heo…</div>
+</div>
+
+<div id="title" class="pill">
+  <h1>TRẠI <span class="oink">HEO</span></h1>
+  <div class="sub">trang trại 3D — cho vui thôi 🐷</div>
+  <div id="stats"><b id="oinkCount">0</b> tiếng ụt ịt · <b id="pigCount">0</b> heo</div>
+</div>
+
+<div id="settings">
+  <div class="set pill"><label>Chất lượng</label>
+    <select id="selQuality">
+      <option value="low">Thấp</option>
+      <option value="medium" selected>Vừa</option>
+      <option value="high">Cao</option>
+      <option value="ultra">Siêu</option>
+    </select>
+  </div>
+  <div class="set pill"><label>Thời tiết</label>
+    <select id="selWeather">
+      <option value="clear" selected>Nắng</option>
+      <option value="cloudy">Nhiều mây</option>
+      <option value="rain">Mưa</option>
+    </select>
+  </div>
+  <div class="set pill"><label>Giờ</label>
+    <select id="selTime">
+      <option value="cycle" selected>Chu kỳ ngày đêm</option>
+      <option value="morning">Sáng</option>
+      <option value="noon">Trưa</option>
+      <option value="golden">Chiều vàng</option>
+      <option value="sunset">Hoàng hôn</option>
+      <option value="night">Đêm</option>
+    </select>
+  </div>
+  <div class="set pill"><label>Âm thanh</label>
+    <button id="btnSound">Tắt</button>
+  </div>
+</div>
+
+<div id="hints" class="pill">
+  <span class="h kb"><kbd>WASD</kbd>đi</span>
+  <span class="h kb"><kbd>Shift</kbd>chạy</span>
+  <span class="h kb"><kbd>Space</kbd>nhảy</span>
+  <span class="h kb"><kbd>E</kbd>ụt ịt</span>
+  <span class="h kb"><kbd>B</kbd>heo con</span>
+  <span class="h kb"><kbd>F</kbd>ăn</span>
+  <span class="h kb"><kbd>Chuột</kbd>camera</span>
+  <span class="h kb"><kbd>Lăn</kbd>zoom</span>
+  <span class="h kb"><kbd>C</kbd>điện ảnh</span>
+  <span class="h kb"><kbd>F3</kbd>debug</span>
+</div>
+
+<div id="toast" class="pill"></div>
+<div id="debug" class="pill"></div>
+
+<div id="touch">
+  <div id="joy"><div class="knob"></div></div>
+  <div id="tbtns">
+    <button id="tRun">CHẠY</button>
+    <button id="tJump">NHẢY</button>
+    <button id="tEat">ĂN</button>
+    <button id="tOink">ỤT ỊT</button>
+  </div>
+</div>
+
+<script>
+  // bắt lỗi sớm: hiện lên màn hình chờ thay vì treo vô định
+  window.__errs = [];
+  function __showErr(m) {
+    window.__errs.push(m);
+    var el = document.querySelector('#loading .msg');
+    if (el) el.textContent = 'Lỗi: ' + m;
+  }
+  addEventListener('error', e => __showErr(e.message || 'lỗi tài nguyên: ' + (e.target && e.target.src ? e.target.src.split('/').pop() : 'không rõ')), true);
+  addEventListener('unhandledrejection', e => __showErr('rejection: ' + e.reason));
+</script>
+<script type="module" src="./main.js"></script>
+</body>
+</html>
