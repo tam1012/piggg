@@ -52,7 +52,7 @@ renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.95;
+renderer.toneMappingExposure = 1.06;
 $('app').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
@@ -148,7 +148,7 @@ const inBarn = (x, z, m = 1) => Math.abs(x - BARN.x) < BARN.hx * m && Math.abs(z
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i);
     const n = Math.abs(Math.sin(x * 12.9898 + z * 78.233) * 43758.5453) % 1;
-    c.setHSL(0.29 + (n - 0.5) * 0.035, 0.58, 0.33 + (n - 0.5) * 0.09, THREE.SRGBColorSpace);
+    c.setHSL(0.29 + (n - 0.5) * 0.035, 0.62, 0.38 + (n - 0.5) * 0.08, THREE.SRGBColorSpace);
     // đường đất
     let road = 0;
     for (const [x1, z1, x2, z2, w] of PATHS) road = Math.max(road, 1 - smoothstep(w * 0.75, w * 1.25, distToSeg(x, z, x1, z1, x2, z2)));
@@ -415,7 +415,7 @@ function buildGrass() {
     s3.set(rand(0.8, 1.3), rand(0.6, 1.5), 1);
     m4.compose(v3, q4, s3);
     grassMesh.setMatrixAt(placed, m4);
-    col.setHSL(rand(0.24, 0.31), rand(0.45, 0.62), rand(0.3, 0.46), THREE.SRGBColorSpace);
+    col.setHSL(rand(0.25, 0.32), rand(0.55, 0.72), rand(0.38, 0.52), THREE.SRGBColorSpace);
     grassMesh.setColorAt(placed, col);
     placed++;
   }
@@ -475,25 +475,46 @@ function roundRectPath(ctx, x, y, w, h, r) {
 function makeNameTag(name) {
   const cv = document.createElement('canvas');
   let ctx = cv.getContext('2d');
-  ctx.font = '700 42px system-ui, sans-serif';
+  ctx.font = '800 40px system-ui, sans-serif';
   const tw = Math.ceil(ctx.measureText(name).width);
-  cv.width = Math.max(140, tw + 52);
-  cv.height = 78;
+  cv.width = Math.max(160, tw + 64);
+  cv.height = 84;
   ctx = cv.getContext('2d');
-  roundRectPath(ctx, 3, 3, cv.width - 6, cv.height - 6, 30);
-  ctx.fillStyle = 'rgba(15,18,26,0.66)';
+
+  // Đổ bóng mềm
+  ctx.shadowColor = 'rgba(255, 94, 136, 0.28)';
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetY = 4;
+
+  // Nền kính mờ phớt hồng (Frosted Jelly Tag)
+  roundRectPath(ctx, 4, 4, cv.width - 8, cv.height - 8, 32);
+  const grad = ctx.createLinearGradient(0, 0, 0, cv.height);
+  grad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+  grad.addColorStop(1, 'rgba(255, 235, 242, 0.88)');
+  ctx.fillStyle = grad;
   ctx.fill();
+
+  // Viền trắng phản quang & phớt hồng
+  ctx.shadowColor = 'transparent';
   ctx.lineWidth = 3.5;
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.strokeStyle = 'rgba(255, 150, 180, 0.65)';
   ctx.stroke();
-  ctx.font = '700 42px system-ui, sans-serif';
+
+  // Highlight bóng kính trên đỉnh
+  roundRectPath(ctx, 8, 8, cv.width - 16, 26, 16);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+  ctx.fill();
+
+  // Chữ tên heo dễ thương
+  ctx.font = '900 40px system-ui, sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#421a2b';
   ctx.fillText(name, cv.width / 2, cv.height / 2 + 2);
+
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
-  sp.scale.set(cv.width / 150, cv.height / 150, 1);
+  sp.scale.set(cv.width / 140, cv.height / 140, 1);
   return sp;
 }
 function setPigName(pig, name) {
@@ -508,13 +529,13 @@ function setPigName(pig, name) {
   pig.group.add(pig.tag);
 }
 
-function textSprite(text, color = '#ffffff', outline = 'rgba(30,20,25,.65)') {
+function textSprite(text, color = '#ffffff', outline = 'rgba(255, 94, 136, 0.75)') {
   const cv = document.createElement('canvas');
   cv.width = 256; cv.height = 96;
   const ctx = cv.getContext('2d');
-  ctx.font = '700 46px system-ui, sans-serif';
+  ctx.font = '900 48px system-ui, sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.lineWidth = 8; ctx.strokeStyle = outline;
+  ctx.lineWidth = 10; ctx.strokeStyle = outline;
   ctx.strokeText(text, 128, 50);
   ctx.fillStyle = color;
   ctx.fillText(text, 128, 50);
@@ -552,32 +573,66 @@ function makePig({ scale = 1, body = pick(BODIES) } = {}) {
 
   const head = new THREE.Group();
   head.position.set(0, 1.3, 1.05);
-  const skull = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 12), mat(body));
-  skull.scale.set(0.92, 0.85, 0.95);
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(0.52, 18, 14), mat(body));
+  skull.scale.set(0.96, 0.88, 0.96);
   skull.castShadow = true;
   head.add(skull);
-  const snout = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.23, 0.18, 12), mat(dark));
+
+  // Mũi heo tròn xoe
+  const snout = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.18, 14), mat(dark));
   snout.rotation.x = Math.PI / 2;
   snout.position.set(0, -0.05, 0.5);
   head.add(snout);
-  for (const sx of [-0.07, 0.07]) {
-    const nostril = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 5), mat(0x8c4a5c));
+  for (const sx of [-0.065, 0.065]) {
+    const nostril = new THREE.Mesh(new THREE.SphereGeometry(0.038, 8, 6), mat(0x99485e));
     nostril.position.set(sx, -0.05, 0.6);
+    nostril.scale.set(0.9, 1.3, 0.8);
     head.add(nostril);
   }
-  for (const sx of [-0.2, 0.2]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), mat(0x241a1e));
-    eye.position.set(sx, 0.14, 0.42);
+
+  // Mắt heo long lanh (Anime / Chibi style highlight)
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1f161a });
+  const glintMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  for (const sx of [-0.21, 0.21]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.068, 12, 10), eyeMat);
+    eye.position.set(sx, 0.15, 0.43);
     head.add(eye);
+
+    // Điểm sáng lớn
+    const glint1 = new THREE.Mesh(new THREE.SphereGeometry(0.024, 8, 6), glintMat);
+    glint1.position.set(sx + (sx > 0 ? 0.018 : -0.01), 0.175, 0.485);
+    head.add(glint1);
+
+    // Điểm sáng nhỏ phụ
+    const glint2 = new THREE.Mesh(new THREE.SphereGeometry(0.012, 6, 5), glintMat);
+    glint2.position.set(sx + (sx > 0 ? -0.012 : 0.018), 0.13, 0.485);
+    head.add(glint2);
   }
+
+  // Má hồng đào (Cute Blush)
+  const blushMat = mat(0xff7d95, { transparent: true, opacity: 0.75 });
+  for (const sx of [-0.32, 0.32]) {
+    const blush = new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 8), blushMat);
+    blush.position.set(sx, 0.02, 0.38);
+    blush.scale.set(1.2, 0.65, 0.4);
+    head.add(blush);
+  }
+
+  // Tai vểnh đáng yêu với lòng tai hồng nhạt
   for (const sx of [-0.26, 0.26]) {
     const em = mat(dark);
-    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.32, 4), em);
+    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.32, 5), em);
     extraPaint.push(em);
     ear.position.set(sx, 0.38, 0.02);
-    ear.rotation.set(-0.35, 0, sx > 0 ? -0.5 : 0.5);
+    ear.rotation.set(-0.35, 0, sx > 0 ? -0.45 : 0.45);
     ear.castShadow = true;
     head.add(ear);
+
+    // Lòng tai hồng phấn
+    const earInner = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.22, 5), mat(0xffbed0));
+    earInner.position.set(sx, 0.37, 0.05);
+    earInner.rotation.set(-0.35, 0, sx > 0 ? -0.45 : 0.45);
+    head.add(earInner);
   }
   g.add(head);
 
@@ -1176,13 +1231,21 @@ function updatePigAnim(pig, dt, t) {
     pig.legs[3].rotation.x = Math.sin(pig.walkPhase) * amp;
     pig.legs[1].rotation.x = Math.sin(pig.walkPhase + Math.PI) * amp;
     pig.legs[2].rotation.x = Math.sin(pig.walkPhase + Math.PI) * amp;
-    g.position.y += Math.abs(Math.sin(pig.walkPhase)) * 0.05 * amp * 2;
+    g.position.y += Math.abs(Math.sin(pig.walkPhase)) * 0.08 * amp * 2;
+    // Độ nhún squish & stretch đàn hồi cho cơ thể mũm mĩm
+    pig.bodyMesh.scale.y = 0.95 + Math.sin(pig.walkPhase * 2) * 0.04;
+    pig.bodyMesh.scale.x = 1.22 - Math.sin(pig.walkPhase * 2) * 0.03;
+    pig.head.rotation.z = Math.sin(pig.walkPhase) * 0.06; // lắc lư đầu nhẹ theo nhịp
   } else {
     for (const l of pig.legs) l.rotation.x = damp(l.rotation.x, 0, 10, dt);
+    pig.bodyMesh.scale.x = damp(pig.bodyMesh.scale.x, 1.22, 6, dt);
+    pig.head.rotation.z = damp(pig.head.rotation.z, 0, 6, dt);
   }
   // đuôi + thở
-  pig.tail.rotation.z = Math.sin(t * (pig.isBaby ? 5 : 3) + pig.seed) * 0.35;
-  pig.bodyMesh.scale.y = 0.95 + Math.sin(t * 2 + pig.seed) * 0.012;
+  pig.tail.rotation.z = Math.sin(t * (pig.isBaby ? 6 : 3.8) + pig.seed) * 0.45;
+  if (!moving) {
+    pig.bodyMesh.scale.y = 0.95 + Math.sin(t * 2.5 + pig.seed) * 0.02;
+  }
   // oink: ngẩng đầu
   if (pig.oinkT > 0) {
     pig.oinkT -= dt;
