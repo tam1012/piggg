@@ -16,11 +16,17 @@ sinh bằng code. Three.js nằm sẵn trong `vendor/`.
 | `E` | ụt ịt — cả đàn heo chạy tới tìm bạn |
 | `B` | đẻ thêm heo con (tối đa ~26 con) |
 | `F` | ăn ở máng cám (phải đứng gần máng) |
+| `G` | xịt hơi 💨 — heo gần bạn tán loạn bỏ chạy |
 | Chuột kéo / lăn | xoay camera / zoom |
-| Chạm vào heo khác | nó giật mình bỏ chạy |
+| Bấm/chạm vào heo khác | nó giật mình bỏ chạy (hiện tên nó) |
+| Bấm/chạm vào chính mình | đặt tên cho heo của bạn |
 | Nhảy xuống vũng bùn | bắn bùn, heo dính bùn |
 | `C` | chế độ điện ảnh (ẩn UI, camera quay chậm) |
 | `F3` | debug FPS |
+
+Mỗi con heo có bảng tên trên đầu: đàn heo đầu mang tên Lâm, Phan Anh, Đức,
+Thành, Trung, Đạt, Công, Dương, Huy; heo con mới đẻ có tên ngẫu nhiên kiểu
+Ụt, Bông, Mực, Tí Nị…
 
 Trên điện thoại: cần điều khiển ảo bên trái + nút bên phải, máy màn nhỏ tự động
 chạy chất lượng "Thấp" cho mượt.

@@ -460,6 +460,53 @@ for (let i = 0; i < 6; i++) {
 /* ---------------- HEO ---------------- */
 const OINK_TEXTS = ['ụt ịt!', 'oink!', 'oink oink!', 'ịt ịt!', 'ụt ụt!'];
 const BODIES = [0xf2a3b3, 0xf4b3ad, 0xf7c1c9, 0xef9aa8];
+const NPC_NAMES = ['Lâm', 'Phan Anh', 'Đức', 'Thành', 'Trung', 'Đạt', 'Công', 'Dương', 'Huy'];
+const BABY_NAMES = ['Ụt', 'Bông', 'Mực', 'Béo', 'Tí Nị', 'Sủi', 'Tofu', 'Xà Cừ', 'Muối', 'Chả', 'Nem', 'Bụi', 'Cục Mìn', 'Tẹt', 'Nhồi', 'Sủi Béo'];
+
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function makeNameTag(name) {
+  const cv = document.createElement('canvas');
+  let ctx = cv.getContext('2d');
+  ctx.font = '700 42px system-ui, sans-serif';
+  const tw = Math.ceil(ctx.measureText(name).width);
+  cv.width = Math.max(140, tw + 52);
+  cv.height = 78;
+  ctx = cv.getContext('2d');
+  roundRectPath(ctx, 3, 3, cv.width - 6, cv.height - 6, 30);
+  ctx.fillStyle = 'rgba(15,18,26,0.66)';
+  ctx.fill();
+  ctx.lineWidth = 3.5;
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.stroke();
+  ctx.font = '700 42px system-ui, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(name, cv.width / 2, cv.height / 2 + 2);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+  sp.scale.set(cv.width / 150, cv.height / 150, 1);
+  return sp;
+}
+function setPigName(pig, name) {
+  pig.name = name;
+  if (pig.tag) {
+    pig.group.remove(pig.tag);
+    pig.tag.material.map.dispose();
+    pig.tag.material.dispose();
+  }
+  pig.tag = makeNameTag(name);
+  pig.tag.position.y = 2.08;
+  pig.group.add(pig.tag);
+}
 
 function textSprite(text, color = '#ffffff', outline = 'rgba(30,20,25,.65)') {
   const cv = document.createElement('canvas');
@@ -575,6 +622,9 @@ function spawnPlayer() {
   player.yaw = Math.PI; // nhìn về phía chuồng
   scene.add(player.group);
   pigs.push(player);
+  let savedName = 'Heo Ú';
+  try { savedName = localStorage.getItem('pigName') || 'Heo Ú'; } catch (e) { /* bỏ qua */ }
+  setPigName(player, savedName);
 }
 function spawnNpc(i) {
   const pig = makePig({ scale: rand(0.85, 1.05) });
@@ -583,9 +633,10 @@ function spawnNpc(i) {
   pig.state = 'wander'; pig.stateT = rand(0, 3);
   scene.add(pig.group);
   pigs.push(pig);
+  setPigName(pig, NPC_NAMES[i % NPC_NAMES.length]);
 }
 spawnPlayer();
-for (let i = 0; i < 7; i++) spawnNpc(i);
+for (let i = 0; i < NPC_NAMES.length; i++) spawnNpc(i);
 
 /* ---------------- va chạm ---------------- */
 function resolveCollisions(pos, prev) {
@@ -732,6 +783,23 @@ const sfx = {
       src.connect(flt).connect(gn).connect(this.master);
       src.start(t);
     }
+  },
+  fart() {
+    if (!S.sound || !this.ctx) return;
+    const ctx = this.ensure(), t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(72, t);
+    osc.frequency.exponentialRampToValueAtTime(36, t + 0.45);
+    const flt = ctx.createBiquadFilter();
+    flt.type = 'lowpass'; flt.frequency.value = 190;
+    const gn = ctx.createGain();
+    gn.gain.setValueAtTime(0.0001, t);
+    gn.gain.exponentialRampToValueAtTime(0.6, t + 0.05);
+    gn.gain.setValueAtTime(0.6, t + 0.28);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+    osc.connect(flt).connect(gn).connect(this.master);
+    osc.start(t); osc.stop(t + 0.52);
   },
   chirp() {
     if (!S.sound || !this.ctx) return;
@@ -1097,10 +1165,38 @@ function spawnBaby() {
   baby.state = 'follow'; baby.stateT = rand(8, 14);
   scene.add(baby.group);
   pigs.push(baby);
+  setPigName(baby, pick(BABY_NAMES));
   sfx.pop();
   playOink(baby, 0.9);
-  showToast('Heo con vừa chào đời! 🐷 (' + pigs.filter(p => p.isBaby).length + ' heo con)');
+  showToast('Heo con "' + baby.name + '" vừa chào đời! 🐷 (' + (babies + 1) + ' heo con)');
   pigCountEl.textContent = pigs.length;
+}
+
+/* ---------------- troll: xịt hơi ---------------- */
+function doFart() {
+  const bx = player.pos.x - Math.sin(player.yaw) * 0.9;
+  const bz = player.pos.z - Math.cos(player.yaw) * 0.9;
+  spawnSplash(bx, 0.45, bz, 12, 0xa8d65a);
+  sfx.fart();
+  let escaped = 0;
+  for (const p of pigs) {
+    if (p.isPlayer) continue;
+    if (p.pos.distanceTo(player.pos) < 6) {
+      p.state = 'flee'; p.stateT = rand(1.5, 2.5); p.fleeFrom = player.pos.clone();
+      escaped++;
+    }
+  }
+  showToast(pick(['Ực… xin lỗi cả nhà 🤢', 'Một phát, cả đàn tán loạn! 💨', escaped + ' con heo bỏ chạy vì mùi 😂']));
+}
+
+/* ---------------- đổi tên heo của bạn ---------------- */
+function renamePlayer() {
+  const n = prompt('Tên của bạn là gì? (tối đa 12 ký tự)', player.name === 'Heo Ú' ? '' : player.name || '');
+  if (n === null) return;
+  const name = (n.trim() || 'Heo Ú').slice(0, 12);
+  setPigName(player, name);
+  try { localStorage.setItem('pigName', name); } catch (e) { /* bỏ qua */ }
+  showToast('Chào ' + name + '! 🐷');
 }
 
 /* ---------------- input: bàn phím ---------------- */
@@ -1111,6 +1207,8 @@ addEventListener('keydown', (e) => {
   if (e.code === 'KeyE') playOink(player);
   if (e.code === 'KeyB') spawnBaby();
   if (e.code === 'KeyF') tryEat();
+  if (e.code === 'KeyG') doFart();
+  if (e.code === 'KeyV') renamePlayer();
   if (e.code === 'KeyC') { S.cinematic = !S.cinematic; document.body.classList.toggle('cinematic', S.cinematic); showToast(S.cinematic ? 'Chế độ điện ảnh — bấm C để thoát' : 'Đã thoát chế độ điện ảnh'); }
   if (e.code === 'F3') { S.debug = !S.debug; debugEl.style.display = S.debug ? 'block' : 'none'; e.preventDefault(); }
 });
@@ -1184,25 +1282,27 @@ const bindBtn = (id, down, up) => {
 bindBtn('tJump', () => { jumpQueued = true; });
 bindBtn('tOink', () => playOink(player));
 bindBtn('tEat', () => tryEat());
+bindBtn('tFart', () => doFart());
 bindBtn('tRun', () => { touchRun = !touchRun; $('tRun').classList.toggle('on', touchRun); });
 
 /* ---------------- chạm vào heo → nó bỏ chạy ---------------- */
 const raycaster = new THREE.Raycaster();
 function tapPick(cx, cy) {
   raycaster.setFromCamera(new THREE.Vector2((cx / innerWidth) * 2 - 1, -(cy / innerHeight) * 2 + 1), camera);
-  const targets = pigs.filter(p => !p.isPlayer).map(p => p.group);
-  const hits = raycaster.intersectObjects(targets, true);
+  const hits = raycaster.intersectObjects(pigs.map(p => p.group), true);
   if (hits.length) {
     let o = hits[0].object;
     while (o && !o.userData.pig) o = o.parent;
     if (o && o.userData.pig) {
       const pig = o.userData.pig;
+      if (pig.isPlayer) { renamePlayer(); return; }
       pig.state = 'flee'; pig.stateT = rand(2, 3); pig.fleeFrom = player.pos.clone();
       sfx.squeal();
       const sp = textSprite(pick(['hự!', 'á á!', 'ơ kìa!', 'chạy đi!']));
-      sp.position.copy(pig.group.position).add(new THREE.Vector3(0, 2.1 * pig.scale, 0));
+      sp.position.copy(pig.group.position).add(new THREE.Vector3(0, 2.5 * pig.scale, 0));
       scene.add(sp);
       floaters.push({ sp, life: 1, vy: 1 });
+      showToast(pig.name + ' hoảng hồn bỏ chạy 😂');
     }
   }
 }
@@ -1317,7 +1417,8 @@ function loop() {
   // giới thiệu lúc mới vào
   if (introStep === 0 && t > 1.2) { introStep = 1; showToast('Chào mừng đến Trại Heo! Đi bằng ' + (isTouch ? 'cần điều khiển' : 'WASD') + ', kêu bằng ' + (isTouch ? 'nút Ụt ịt' : 'phím E') + ' 🐷', 4200); }
   else if (introStep === 1 && t > 6.5) { introStep = 2; showToast('Bấm E để ụt ịt — cả đàn heo sẽ chạy tới tìm bạn!', 4200); }
-  else if (introStep === 2 && t > 12) { introStep = 3; showToast('Thử nhảy xuống vũng bùn nhé. Đói thì ra máng ăn bấm F. Chúc vui!', 4500); }
+  else if (introStep === 2 && t > 12) { introStep = 3; showToast('Bấm/chạm vào heo nào nó hoảng bỏ chạy; chạm vào chính mình để đặt tên 😆', 4500); }
+  else if (introStep === 3 && t > 18) { introStep = 4; showToast('Thử nhảy xuống vũng bùn, ăn cám ở máng, và… phím G nhé 💨', 4500); }
 
   renderer.render(scene, camera);
 }
