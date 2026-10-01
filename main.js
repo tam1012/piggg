@@ -37,7 +37,7 @@ const QUALITY = {
   high:   { px: 1.75, shadow: true,  shadowMap: 2048, grass: 24000, flowers: 150 },
   ultra:  { px: 2,    shadow: true,  shadowMap: 2048, grass: 42000, flowers: 220 },
 };
-const TIME_PRESET = { morning: 0.30, noon: 0.50, golden: 0.67, sunset: 0.775, night: 0.97 };
+const TIME_PRESET = { morning: 0.30, noon: 0.50, golden: 0.67, sunset: 0.735, night: 0.97 };
 const DAY_LEN = 240; // giây cho 1 ngày đêm (chế độ cycle)
 const timeState = { t: 0.34 };
 
@@ -1310,7 +1310,7 @@ function updateRain(dt) {
 /* ---------------- bầu trời theo giờ + thời tiết ---------------- */
 const C_DAY_TOP = new THREE.Color(0x4f9ff0), C_DAY_HOR = new THREE.Color(0xbfe3ff);
 const C_DUSK_TOP = new THREE.Color(0x39497e), C_DUSK_HOR = new THREE.Color(0xff9c5f);
-const C_NIGHT_TOP = new THREE.Color(0x060c1d), C_NIGHT_HOR = new THREE.Color(0x121d33);
+const C_NIGHT_TOP = new THREE.Color(0x0d1a38), C_NIGHT_HOR = new THREE.Color(0x24365a);
 const C_GREY = new THREE.Color(0x8d979f);
 const tmpTop = new THREE.Color(), tmpHor = new THREE.Color(), tmpC = new THREE.Color();
 const sunDir = new THREE.Vector3();
@@ -1347,9 +1347,9 @@ function updateSky(dt) {
   sun.position.copy(player.pos).addScaledVector(sunDir, 90);
   sun.target.position.copy(player.pos);
   // trăng
-  moon.intensity = smoothstep(0.08, -0.22, -e) * 0.55 * (S.weather === 'clear' ? 1 : 0.35);
+  moon.intensity = smoothstep(0.08, -0.22, e) * 0.8 * (S.weather === 'clear' ? 1 : 0.35);
   moon.position.copy(player.pos).addScaledVector(sunDir, -80);
-  hemi.intensity = 0.2 + dayI * 0.45;
+  hemi.intensity = 0.34 + dayI * 0.31;
 
   // đĩa mặt trời/trăng + sao
   skyGroup.position.copy(camera.position);
